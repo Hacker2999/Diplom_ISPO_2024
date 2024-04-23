@@ -1,16 +1,24 @@
-# This is a sample Python script.
+import logging
+from aiogram import Bot, Dispatcher, executor, types
+from aiogram.contrib.fsm_storage.memory import MemoryStorage
+from aiogram.contrib.middlewares.logging import LoggingMiddleware
+from config import BOT_TOKEN
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+# Configure logging (optional)
+logging.basicConfig(level=logging.INFO)
 
+# Initialize bot and dispatcher
+bot = Bot(token=BOT_TOKEN)
+storage = MemoryStorage()
+dp = Dispatcher(bot, storage=storage)
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+# Register middlewares (optional)
+dp.middleware.setup(LoggingMiddleware())
 
+# Import and register handlers
+from handlers import register_handlers
+register_handlers(dp)
 
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+# Start the bot
+if __name__ == "__main__":
+    executor.start_polling(dp, skip_updates=True)
