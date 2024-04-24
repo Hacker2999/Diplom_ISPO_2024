@@ -2,7 +2,7 @@ from peewee import PostgresqlDatabase, Model, IntegerField, CharField
 
 from config import DB_NAME, DB_USER, DB_PASSWORD, DB_HOST, DB_PORT
 
-# Connect to the PostgreSQL database
+# Подключение к базе данных PostgreSQL
 db = PostgresqlDatabase(database=DB_NAME, user=DB_USER, password=DB_PASSWORD, host=DB_HOST, port=DB_PORT)
 
 
@@ -24,7 +24,7 @@ class Schedule(BaseModel):
     time = CharField()
     subject = CharField()
     teacher = CharField()
-    room = CharField(null=True)  # Allow for rooms to be optional
+    room = CharField(null=True)  # Разрешаем указание номера аудитории как необязательного
 
 
 class TeacherSchedule(BaseModel):
@@ -36,6 +36,6 @@ class TeacherSchedule(BaseModel):
     room = CharField(null=True)
 
 
-# Create tables if they don't exist
+# Создание таблиц, если они не существуют
 db.connect()
-db.create_tables([User, Schedule, TeacherSchedule])
+db.create_tables([User, Schedule, TeacherSchedule], safe=True)

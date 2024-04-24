@@ -1,8 +1,9 @@
 from datetime import datetime
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 
 def format_schedule(schedule_data):
-    # Assuming schedule_data is a list of dictionaries, each representing a class
+    """Функция для форматирования расписания."""
     output = ""
     for item in schedule_data:
         day = item['day']
@@ -15,7 +16,14 @@ def format_schedule(schedule_data):
 
 
 def get_current_weekday():
-    # Get the current day of the week as a string (e.g., "Monday")
+    """Функция для получения текущего дня недели."""
     return datetime.today().strftime("%A")
 
-# ... (Add other utility functions as needed)
+
+def group_schedule_keyboard():
+    keyboard = InlineKeyboardMarkup()
+    keyboard.add(
+        InlineKeyboardButton(text="Моё расписание", callback_data="my_schedule"),
+        InlineKeyboardButton(text="Поиск расписания", callback_data="search_schedule")
+    )
+    return keyboard

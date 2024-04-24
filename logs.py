@@ -4,26 +4,26 @@ import sys
 
 def setup_logging(log_level=logging.INFO, log_file=None):
     """
-    Configure logging settings.
+    Настройка параметров логирования.
 
     Args:
-        log_level (int, optional): The logging level. Defaults to logging.INFO.
-        log_file (str, optional): The path to the log file. If None, logs will be output to the console.
+        log_level (int, optional): Уровень логирования. По умолчанию logging.INFO.
+        log_file (str, optional): Путь к файлу логов. Если None, логи будут выводиться в консоль.
     """
-    # Create logger
+    # Создание логгера
     logger = logging.getLogger()
     logger.setLevel(log_level)
 
-    # Create formatter
+    # Создание форматтера
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
-    # Create console handler
+    # Создание обработчика для консоли
     console_handler = logging.StreamHandler(sys.stdout)
     console_handler.setLevel(log_level)
     console_handler.setFormatter(formatter)
     logger.addHandler(console_handler)
 
-    # Create file handler if log file is specified
+    # Создание обработчика для файла, если указан log_file
     if log_file:
         file_handler = logging.FileHandler(log_file)
         file_handler.setLevel(log_level)
@@ -31,6 +31,6 @@ def setup_logging(log_level=logging.INFO, log_file=None):
         logger.addHandler(file_handler)
 
 
-# Example usage:
+# Пример использования:
 if __name__ == "__main__":
     setup_logging(log_level=logging.DEBUG, log_file="bot.log")

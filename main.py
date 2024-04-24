@@ -1,24 +1,26 @@
-import logging
-from aiogram import Bot, Dispatcher, executor, types
+from aiogram import Bot, Dispatcher
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.contrib.middlewares.logging import LoggingMiddleware
 from config import BOT_TOKEN
+from handlers import register_handlers, register_callbacks
+from aiogram import executor
 
-# Configure logging (optional)
-logging.basicConfig(level=logging.INFO)
+from logs import setup_logging
 
-# Initialize bot and dispatcher
+setup_logging()
+
+# Инициализация бота и диспетчера
 bot = Bot(token=BOT_TOKEN)
 storage = MemoryStorage()
 dp = Dispatcher(bot, storage=storage)
 
-# Register middlewares (optional)
+# Регистрация мидлваров (по желанию)
 dp.middleware.setup(LoggingMiddleware())
 
-# Import and register handlers
-from handlers import register_handlers
+# Регистрация обработчиков команд и коллбэков
 register_handlers(dp)
+register_callbacks(dp, bot)
 
-# Start the bot
+# Запуск бота
 if __name__ == "__main__":
     executor.start_polling(dp, skip_updates=True)

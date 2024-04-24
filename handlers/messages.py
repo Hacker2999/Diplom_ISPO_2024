@@ -1,38 +1,23 @@
-from aiogram import types
-from aiogram.dispatcher import FSMContext
+# Тексты сообщений для бота
 
-from commands import Registration  # Import the StatesGroup from commands.py
-from database import get_courses_for_department, get_groups_for_department_and_course
-from main import dp
+# Приветственное сообщение
+START_MESSAGE = "Добро пожаловать! Нажмите /register для начала регистрации или /help для справки."
 
+# Сообщение со списком доступных команд
+HELP_MESSAGE = (
+    "Доступные команды:\n"
+    "/register - Начать регистрацию\n"
+    "/schedule - Просмотр расписания"
+)
 
-@dp.message_handler(state=Registration.department)
-async def register_department(message: types.Message, state: FSMContext):
-    department = message.text
-    # Add validation for department (optional)
-    await state.update_data(department=department)
+# Сообщение при успешной регистрации
+REGISTRATION_COMPLETE_MESSAGE = "Регистрация завершена! Теперь вы можете просмотреть расписание."
 
-    # Implement logic to get available courses for the selected department
-    courses = get_courses_for_department(department)  # Replace with your implementation
+# Сообщение при запросе расписания группы
+GROUP_SCHEDULE_MESSAGE = "Введите номер группы для просмотра расписания:"
 
-    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    for course in courses:
-        keyboard.add(types.KeyboardButton(text=course))
-    await message.answer("Choose your course:", reply_markup=keyboard)
-    await state.set_state(Registration.course)
+# Сообщение при запросе расписания преподавателя
+TEACHER_SCHEDULE_MESSAGE = "Введите фамилию преподавателя для просмотра его расписания:"
 
-
-@dp.message_handler(state=Registration.course)
-async def register_course(message: types.Message, state: FSMContext):
-    course = message.text
-    # Add validation for course (optional)
-    await state.update_data(course=course)
-
-    # Implement logic to get available groups for the selected department and course
-    groups = get_groups_for_department_and_course(state.get_data())  # Replace with your implementation
-
-    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    for group in groups:
-        keyboard.add(types.KeyboardButton(text=group))
-    await message.answer("Choose your group number:", reply_markup=keyboard)
-    await state.set_state(Registration.group_number)
+# Сообщение об отсутствии расписания
+NO_SCHEDULE_MESSAGE = "Расписание не найдено."

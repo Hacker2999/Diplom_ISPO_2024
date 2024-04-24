@@ -1,38 +1,55 @@
 from aiogram import types
-from aiogram.dispatcher import FSMContext
-
-from database import get_schedule_for_group
-from main import dp
-from utils import format_schedule  # Assuming you have a utility function for formatting
+from database import get_user_schedule, get_teacher_schedule, get_user_by_id
+from utils import format_schedule, group_schedule_keyboard
 
 
-@dp.callback_query_handler(text="my_schedule")
-async def show_my_schedule(callback_query: types.CallbackQuery, state: FSMContext):
+async def group_schedule(callback_query: types.CallbackQuery, bot):
+    await bot.send_message(callback_query.from_user.id, "Выберите действие:", reply_markup=group_schedule_keyboard())
+
+
+async def my_schedule(callback_query: types.CallbackQuery, bot):
     user_id = callback_query.from_user.id
-    user_data = await state.get_data()
-    if not user_data:
-        await callback_query.message.answer("Please register first!")
-        return
+    user = await get_user_by_id(user_id)
+    if user:
+        schedule = get_user_schedule(user.group_number)
+        formatted_schedule = format_schedule(schedule)
+        await bot.send_message(user_id, formatted_schedule)
+    else:
+        await bot.send_message(user_id, "Вашего пользователя нет в базе данных.")
 
-    group_number = user_data['group_number']
-    schedule = get_schedule_for_group(group_number)  # Replace with your implementation
 
+async def search_schedule(callback_query: types.CallbackQuery, bot):
+    await bot.send_message(callback_query.from_user.id, "Введите номер группы для поиска расписания:")
+
+
+async def search_schedule_by_group(message: types.Message, bot):
+    group_number = message.text
+    schedule = await get_user_schedule(group_number)
     if schedule:
         formatted_schedule = format_schedule(schedule)
-        await callback_query.message.answer(formatted_schedule)
+        await message.answer(formatted_schedule)
     else:
-        await callback_query.message.answer("No schedule found for your group.")
+        await message.answer("Расписание для указанной группы не найдено.")
 
 
-@dp.callback_query_handler(text_startswith="group_")
-async def show_group_schedule(callback_query: types.CallbackQuery):
-    group_number = callback_query.data.split("_")[1]
-    schedule = get_schedule_for_group(group_number)  # Replace with your implementation
+async def teacher_schedule(callback_query: types.CallbackQuery, bot):
+    await bot.send_message(callback_query.from_user.id, "Введите фамилию преподавателя:")
 
+
+async def search_schedule_by_teacher(message: types.Message,bot):
+    teacher_name = message.text
+    schedule = await get_teacher_schedule(teacher_name)
     if schedule:
         formatted_schedule = format_schedule(schedule)
-        await callback_query.message.answer(formatted_schedule)
+        await message.answer(formatted_schedule)
     else:
-        await callback_query.message.answer("No schedule found for this group.")
+        await message.answer("Расписание для указанного преподавателя не найдено.")
 
-# ... Implement similar handlers for other callback actions (e.g., teacher schedule)
+
+def register_callbacks(dp, bot):
+    dp.register_callback_query_handler(lambda c: group_schedule(c, bot), text="group_schedule")
+    dp.register_callback_query_handler(lambda c: my_schedule(c, bot), text="my_schedule")
+    dp.register_callback_query_handler(lambda c: search_schedule(c, bot), text="search_schedule")
+    dp.register_message_handler(lambda m: search_schedule_by_group(m, bot), state=None)
+    dp.register_callback_query_handler(lambda c: teacher_schedule(c, bot), text="teacher_schedule")
+    dp.register_message_handler(lambda m: search_schedule_by_teacher(m, bot), state=None)
