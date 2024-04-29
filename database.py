@@ -1,82 +1,81 @@
-from models import User, Schedule, TeacherSchedule  # Импорт моделей из вашего проекта
+from models import Users, Timetable, Teachers, Groups, Classrooms, GroupsToTimetable, Subjects
 
 
-def get_user(user_id):
-    """Получить информацию о пользователе по его ID."""
+def get_user_by_id(user_id):
     try:
-        user = User.get(User.user_id == user_id)
+        user = Users.get(Users.id == user_id)
         return user
-    except User.DoesNotExist:
+    except Users.DoesNotExist:
         return None
 
 
-def create_user(user_id, department, course, group_number):
-    """Создать новую запись о пользователе."""
-    user = User(user_id=user_id, department=department, course=course, group_number=group_number)
-    user.save()
+def create_user(telegram_id, username, first_name, last_name, department, course, group_number):
+    user = Users.create(
+        telegram_id=telegram_id,
+        username=username,
+        first_name=first_name,
+        last_name=last_name,
+        department=department,
+        course=course,
+        group_number=group_number
+    )
     return user
 
 
-def get_schedule_for_group(group_number, day=None):
-    """Получить расписание для определенной группы и, при необходимости, отфильтровать по дню."""
-    query = Schedule.select().where(Schedule.group_number == group_number)
+def get_schedule_for_group(group_name, day=None):
+    query = Timetable.select().join(Groups).where(Groups.name == group_name)
     if day:
-        query = query.where(Schedule.day == day)
+        query = query.where(Timetable.day == day)
     return list(query)
 
 
 def get_schedules_for_teacher(teacher_name, day=None):
-    """Получить расписание для определенного преподавателя и, при необходимости, отфильтровать по дню."""
-    query = TeacherSchedule.select().where(TeacherSchedule.teacher_name == teacher_name)
+    query = Timetable.select().join(Teachers).where(Teachers.name == teacher_name)
     if day:
-        query = query.where(TeacherSchedule.day == day)
+        query = query.where(Timetable.day == day)
     return list(query)
 
 
 def get_courses_for_department(department_name, day=None):
-    """Получить курсы для определенного отделения и, при необходимости, отфильтровать по дню."""
-    query = TeacherSchedule.select().where(TeacherSchedule.teacher_name == department_name)
+    query = Groups.select().where(Groups.name == department_name)
     if day:
-        query = query.where(TeacherSchedule.day == day)
+        query = query.where(Timetable.day == day)
     return list(query)
 
 
-def get_groups_for_department_and_course(department_name, day=None):
-    """Получить группы для определенного отделения и курса и, при необходимости, отфильтровать по дню."""
-    query = TeacherSchedule.select().where(TeacherSchedule.teacher_name == department_name)
+def get_groups_for_department_and_course(department_name, course_number, day=None):
+    query = Groups.select().where(Groups.name == department_name, Groups.course == course_number)
     if day:
-        query = query.where(TeacherSchedule.day == day)
+        query = query.where(Timetable.day == day)
     return list(query)
 
 
-def get_users_by_group(group_number):
-    """Получает список пользователей по номеру группы."""
-    users = User.select().where(User.group_number == group_number)
+def get_users_by_group(group_name):
+    users = Users.select().join(Groups).where(Groups.name == group_name)
     return list(users)
 
 
-def get_user_by_id(user_id):
-    """Get user information by user ID."""
+async def get_user_schedule(group_name):
     try:
-        user = User.get(User.user_id == user_id)
-        return user
-    except User.DoesNotExist:
-        return None
+        # Получаем расписание для каждого урока
+        query = (Timetable
+                 .select(Timetable, Teachers, Classrooms, Subjects)
+                 .join(Teachers, on=(Timetable.teacherId == Teachers.id))
+                 .join(Classrooms, on=(Timetable.classroomId == Classrooms.id))
+                 .join(Subjects, on=(Timetable.subjectId == Subjects.id))
+                 .join(GroupsToTimetable, on=(Timetable.id == GroupsToTimetable.B))
+                 .join(Groups, on=(GroupsToTimetable.A == Groups.id))  # Add this line
+                 .where(GroupsToTimetable.A == Groups.id))
 
-
-def get_user_schedule(group_number):
-    """Get the schedule for a specific group."""
-    try:
-        schedule = Schedule.select().where(Schedule.group_number == group_number)
-        return list(schedule)
-    except Schedule.DoesNotExist:
+        return query
+    except Exception as e:
+        print("Ошибка при получении расписания пользователя:", e)
         return None
 
 
 def get_teacher_schedule(teacher_name):
-    """Get the schedule for a specific teacher."""
     try:
-        schedule = TeacherSchedule.select().where(TeacherSchedule.teacher_name == teacher_name)
+        schedule = Timetable.select().join(Teachers).where(Teachers.name == teacher_name)
         return list(schedule)
-    except TeacherSchedule.DoesNotExist:
+    except Timetable.DoesNotExist:
         return None

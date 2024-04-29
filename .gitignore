@@ -9,6 +9,7 @@
 .idea/**/dictionaries
 .idea/**/shelf
 config.py
+config
 
 # Generated files
 .idea/**/contentModel.xml
@@ -220,3 +221,4 @@ dmypy.json
 # Cython debug symbols
 cython_debug/
 
+!/.gitignore

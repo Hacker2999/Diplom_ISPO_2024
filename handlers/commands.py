@@ -2,7 +2,7 @@ from aiogram import types
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 
-from models import User
+from database import create_user
 
 
 class Registration(StatesGroup):
@@ -48,13 +48,24 @@ async def register_group_number(message: types.Message, state: FSMContext):
     await state.update_data(group_number=group_number)
     user_data = await state.get_data()
 
-    # Получаем данные пользователя из состояния
+    # Получаем данные пользователя из объекта сообщения
     user_id = message.from_user.id
+    username = message.from_user.username
+    first_name = message.from_user.first_name
+    last_name = message.from_user.last_name
     department = user_data.get('department')
     course = user_data.get('course')
 
     # Создаем запись пользователя в базе данных
-    user = User.create(user_id=user_id, department=department, course=course, group_number=group_number)
+    user = create_user(
+        telegram_id=user_id,
+        username=username,
+        first_name=first_name,
+        last_name=last_name,
+        department=department,
+        course=course,
+        group_number=group_number
+    )
 
     # Проверяем успешность создания записи
     if user:
@@ -62,9 +73,13 @@ async def register_group_number(message: types.Message, state: FSMContext):
     else:
         print("Ошибка при создании пользователя.")
 
-    await message.answer("Регистрация завершена!")
-    await state.finish()
+    # Создаем inline-клавиатуру
+    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    keyboard.add("Моё расписание", "Поиск расписания")
 
+    # Отправляем сообщение с inline-клавиатурой
+    await message.answer("Регистрация завершена!", reply_markup=keyboard)
+    await state.finish()
 
 
 def register_handlers(dp):

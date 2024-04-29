@@ -1,8 +1,11 @@
-from peewee import PostgresqlDatabase, Model, IntegerField, CharField
-
-from config import DB_NAME, DB_USER, DB_PASSWORD, DB_HOST, DB_PORT
+from peewee import (
+    Model, PostgresqlDatabase,
+    CharField, IntegerField, ForeignKeyField, DateTimeField, BigIntegerField, TextField
+)
 
 # Подключение к базе данных PostgreSQL
+from config import *
+
 db = PostgresqlDatabase(database=DB_NAME, user=DB_USER, password=DB_PASSWORD, host=DB_HOST, port=DB_PORT)
 
 
@@ -11,31 +14,72 @@ class BaseModel(Model):
         database = db
 
 
-class User(BaseModel):
-    user_id = IntegerField(primary_key=True)
-    department = CharField()
-    course = IntegerField()
-    group_number = CharField()
+class Users(BaseModel):
+    telegram_id = BigIntegerField(unique=True)
+    username = TextField(null=True)
+    first_name = TextField(null=True)
+    last_name = TextField(null=True)
+    department = TextField(null=True)
+    course = IntegerField(null=True)
+    group_number = TextField(null=True)
 
 
-class Schedule(BaseModel):
-    group_number = CharField()
-    day = CharField()
-    time = CharField()
-    subject = CharField()
-    teacher = CharField()
-    room = CharField(null=True)  # Разрешаем указание номера аудитории как необязательного
+class Classrooms(BaseModel):
+    name = CharField(unique=True)
+
+    class Meta:
+        db_table = 'Classrooms'
 
 
-class TeacherSchedule(BaseModel):
-    teacher_name = CharField()
-    day = CharField()
-    time = CharField()
-    subject = CharField()
-    group_number = CharField()
-    room = CharField(null=True)
+class Groups(BaseModel):
+    name = CharField(unique=True)
+
+    class Meta:
+        db_table = 'Groups'
 
 
-# Создание таблиц, если они не существуют
-db.connect()
-db.create_tables([User, Schedule, TeacherSchedule], safe=True)
+class Subjects(BaseModel):
+    name = TextField(unique=True)
+
+    class Meta:
+        db_table = 'Subjects'
+
+
+class Teachers(BaseModel):
+    name = TextField(unique=True)
+
+    class Meta:
+        db_table = 'Teachers'
+
+
+class Timetable(BaseModel):
+    date = DateTimeField()
+    lesson_number = IntegerField()
+    teacherId = IntegerField(Teachers, column_name='teacherId')
+    classroomId = IntegerField(Classrooms, column_name='classroomId')
+    subjectId = IntegerField(Subjects, column_name='subjectId')
+
+    class Meta:
+        db_table = 'Timetable'
+
+
+class GroupsToTimetable(BaseModel):
+    A = ForeignKeyField(Groups, column_name='A', on_delete='CASCADE', on_update='CASCADE')
+    B = ForeignKeyField(Timetable, column_name='B', on_delete='CASCADE', on_update='CASCADE')
+
+    class Meta:
+        db_table = '_GroupsToTimetable'
+
+
+class PrismaMigrations(BaseModel):
+    id = CharField(primary_key=True)
+    checksum = CharField()
+    finished_at = DateTimeField(null=True)
+    migration_name = CharField()
+    logs = CharField(null=True)
+    rolled_back_at = DateTimeField(null=True)
+    started_at = DateTimeField()
+    applied_steps_count = IntegerField(default=0)
+
+    class Meta:
+        db_table = '_prisma_migrations'

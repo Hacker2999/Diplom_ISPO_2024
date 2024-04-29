@@ -1,6 +1,3 @@
-from main import dp  # Assuming your main bot logic is in main.py
-
-
 async def test_start_command(bot, dp):
     # Send the /start command
     message = await bot.send_message(chat_id=..., text="/start")
