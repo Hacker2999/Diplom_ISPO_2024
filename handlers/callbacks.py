@@ -1,5 +1,6 @@
 from aiogram import types
 from database import get_user_schedule, get_teacher_schedule, get_user_by_id, get_users_by_group
+from models import Users
 from utils import format_schedule, group_schedule_keyboard
 
 
@@ -26,7 +27,9 @@ async def search_schedule(callback_query: types.CallbackQuery, bot):
 
 
 async def search_schedule_by_group(message: types.Message, bot):
-    group_number = message.text
+    user_id = message.from_user.id
+    user = Users.get(telegram_id=user_id)
+    group_number = user.group_number
     schedule = await get_user_schedule(group_number)
     if schedule:
         formatted_schedule = format_schedule(schedule)

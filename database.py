@@ -1,3 +1,7 @@
+import datetime
+
+from peewee import JOIN
+
 from models import Users, Timetable, Teachers, Groups, Classrooms, GroupsToTimetable, Subjects
 
 
@@ -20,6 +24,16 @@ def create_user(telegram_id, username, first_name, last_name, department, course
         group_number=group_number
     )
     return user
+
+
+def update_user(user_id, group_number):
+    try:
+        user = Users.get(Users.telegram_id == user_id)
+        user.group_number = group_number
+        user.save()
+        return True
+    except Users.DoesNotExist:
+        return False
 
 
 def get_schedule_for_group(group_name, day=None):
@@ -55,19 +69,30 @@ def get_users_by_group(group_name):
     return list(users)
 
 
-async def get_user_schedule(group_name):
+async def get_user_schedule(group_number):
     try:
-        # Получаем расписание для каждого урока
+
+        start_date = datetime.date(2024, 1, 20)
+        end_date = datetime.date(2024, 1, 30)
+
+        user = Users.get(group_number=group_number)
+        subquery = (GroupsToTimetable
+                    .select(GroupsToTimetable.B)
+                    .join(Groups, on=(GroupsToTimetable.A == Groups.id))
+                    .where(Groups.name == group_number))
+
         query = (Timetable
-                 .select(Timetable, Teachers, Classrooms, Subjects)
+                 .select(Timetable, Teachers, Classrooms, Subjects, Groups)
                  .join(Teachers, on=(Timetable.teacherId == Teachers.id))
                  .join(Classrooms, on=(Timetable.classroomId == Classrooms.id))
                  .join(Subjects, on=(Timetable.subjectId == Subjects.id))
                  .join(GroupsToTimetable, on=(Timetable.id == GroupsToTimetable.B))
-                 .join(Groups, on=(GroupsToTimetable.A == Groups.id))  # Add this line
-                 .where(GroupsToTimetable.A == Groups.id))
+                 .join(Groups, on=(GroupsToTimetable.A == Groups.id))
+                 .where(Timetable.date.between(start_date, end_date))
+                 .where(Timetable.id << subquery)
+                 .limit(60))
 
-        return query
+        return query.execute()
     except Exception as e:
         print("Ошибка при получении расписания пользователя:", e)
         return None
