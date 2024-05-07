@@ -1,6 +1,6 @@
 from peewee import (
     Model, PostgresqlDatabase,
-    CharField, IntegerField, ForeignKeyField, DateTimeField, BigIntegerField, TextField
+    CharField, IntegerField, ForeignKeyField, DateTimeField, BigIntegerField, TextField, CompositeKey
 )
 
 # Подключение к базе данных PostgreSQL
@@ -69,6 +69,7 @@ class GroupsToTimetable(BaseModel):
 
     class Meta:
         db_table = '_GroupsToTimetable'
+        primary_key = CompositeKey('A', 'B')
 
 
 class PrismaMigrations(BaseModel):
