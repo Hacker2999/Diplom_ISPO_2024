@@ -1,11 +1,13 @@
+import logging
 from aiogram import types
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 from database import get_teacher_schedule, get_schedule
 from models import Users
 from utils import format_schedule, format_teacher_schedule
 
-
+logger = logging.getLogger(__name__)
 async def group_schedule(callback_query: types.CallbackQuery, bot):
+    logger.info(f"User {callback_query.from_user.id} clicked 'Group Schedule' button")
     keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
     button1 = KeyboardButton("Моё расписание")
     button2 = KeyboardButton("Поиск расписания")
@@ -14,6 +16,7 @@ async def group_schedule(callback_query: types.CallbackQuery, bot):
 
 
 async def search_schedule(message: types.Message, bot):
+    logger.info(f"User {message.from_user.id} sent message: {message.text}")
     if message.text == "Назад":
         await group_schedule(message, bot)
     else:
@@ -27,6 +30,7 @@ async def search_schedule(message: types.Message, bot):
 
 
 async def ask_group_number(message: types.Message, bot):
+    logger.info(f"User {message.from_user.id} sent message: {message.text}")
     keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
     button = KeyboardButton("Назад")
     keyboard.add(button)
@@ -34,6 +38,7 @@ async def ask_group_number(message: types.Message, bot):
 
 
 async def search_schedule_by_group(message: types.Message, bot):
+    logger.info(f"User {message.from_user.id} sent message: {message.text}")
     if message.text == "Назад":
         await search_schedule(message, bot)
     else:
@@ -53,21 +58,32 @@ async def search_schedule_by_group(message: types.Message, bot):
 
 
 async def my_schedule(message: types.Message, bot):
+    logger.info(f"User {message.from_user.id} sent message: {message.text}")
     user_id = message.from_user.id
     user = Users.get(telegram_id=user_id)
     if user:
-        group_number = user.group_number
-        schedule = await get_schedule(group_number)
-        if schedule:
-            formatted_schedule = format_schedule(schedule)
-            await message.answer(formatted_schedule)
-        else:
-            await message.answer("Расписание для вашей группы не найдено.")
+        if user.teacher_role == 0:  # Student
+            group_number = user.group_number
+            schedule = await get_schedule(group_number)
+            if schedule:
+                formatted_schedule = format_schedule(schedule)
+                await message.answer(formatted_schedule)
+            else:
+                await message.answer("Расписание для вашей группы не найдено.")
+        else:  # Teacher
+            teacher_name = user.teacher_lastname
+            schedule = await get_teacher_schedule(teacher_name)
+            if schedule:
+                formatted_schedule = format_teacher_schedule(schedule)
+                await message.answer(formatted_schedule)
+            else:
+                await message.answer("Расписание для указанного преподавателя не найдено.")
     else:
         await message.answer("Вашего пользователя нет в базе данных.")
 
 
 async def ask_teacher_surname(message: types.Message, bot):
+    logger.info(f"User {message.from_user.id} sent message: {message.text}")
     keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
     button = KeyboardButton("Назад")
     keyboard.add(button)
@@ -75,6 +91,7 @@ async def ask_teacher_surname(message: types.Message, bot):
 
 
 async def search_schedule_by_teacher(message: types.Message, bot):
+    logger.info(f"User {message.from_user.id} sent message: {message.text}")
     if message.text == "Назад":
         await search_schedule(message, bot)
     else:
@@ -94,6 +111,7 @@ async def search_schedule_by_teacher(message: types.Message, bot):
 
 
 async def handle_back(message: types.Message, bot):
+    logger.info(f"User {message.from_user.id} sent message: {message.text}")
     previous_message_text = message.text
     if previous_message_text == "Выберите способ поиска:":
         await search_schedule(message, bot)

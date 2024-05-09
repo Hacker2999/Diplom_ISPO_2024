@@ -17,12 +17,9 @@ class BaseModel(Model):
 
 class Users(BaseModel):
     telegram_id = BigIntegerField(unique=True)
-    username = TextField(null=True)
-    first_name = TextField(null=True)
-    last_name = TextField(null=True)
-    department = TextField(null=True)
-    course = IntegerField(null=True)
     group_number = TextField(null=True)
+    teacher_lastname = TextField(null=True)
+    teacher_role = IntegerField(default=0, null=False)
 
 
 class Classrooms(BaseModel):

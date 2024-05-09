@@ -1,10 +1,9 @@
+import logging
 from datetime import datetime
-
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup
 import locale
-from middlewares import logger
 from models import Subjects, Teachers, Classrooms, Groups, GroupsToTimetable, Timetable
-
+logger = logging.getLogger(__name__)
 locale.setlocale(
     category=locale.LC_ALL,
     locale="Russian"  # Note: do not use "de_DE" as it doesn't work

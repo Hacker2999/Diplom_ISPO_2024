@@ -1,38 +1,45 @@
+import logging
 import datetime
 
 from models import Users, Timetable, Teachers, Groups, Classrooms, GroupsToTimetable, Subjects
 
+logger = logging.getLogger(__name__)
 
 def get_user_by_id(user_id):
     try:
         user = Users.get(Users.id == user_id)
+        logger.info(f"User {user_id} found in database")
         return user
     except Users.DoesNotExist:
+        logger.info(f"User {user_id} not found in database")
         return None
 
-
-def create_user(telegram_id, username, first_name, last_name, department, course, group_number):
-    user = Users.create(
-        telegram_id=telegram_id,
-        username=username,
-        first_name=first_name,
-        last_name=last_name,
-        department=department,
-        course=course,
-        group_number=group_number
-    )
-    return user
-
-
-def update_user(user_id, group_number):
+def create_user(telegram_id, **kwargs):
     try:
-        user = Users.get(Users.telegram_id == user_id)
-        user.group_number = group_number
-        user.save()
-        return True
-    except Users.DoesNotExist:
-        return False
+        user = Users.create(
+            telegram_id=telegram_id,
+            **kwargs
+        )
+        logger.info(f"User {telegram_id} created successfully")
+        return user
+    except Exception as e:
+        logger.error(f"Error creating user {telegram_id}: {e}")
+        return None
 
+def update_user(telegram_id, **kwargs):
+    try:
+        user = Users.get(telegram_id=telegram_id)
+        if user:
+            for key, value in kwargs.items():
+                setattr(user, key, value)
+            user.save()
+            logger.info(f"User {telegram_id} updated successfully")
+            return True
+        logger.info(f"User {telegram_id} not found in database")
+        return False
+    except Exception as e:
+        logger.error(f"Error updating user {telegram_id}: {e}")
+        return False
 
 async def get_schedule(group_number):
     try:
@@ -57,11 +64,12 @@ async def get_schedule(group_number):
                  .where(Timetable.id.in_(subquery))
                  .limit(60))
 
-        return query.execute()
+        result = query.execute()
+        logger.info(f"Schedule for group {group_number} retrieved successfully")
+        return result
     except Exception as e:
-        print("Ошибка при получении расписания пользователя:", e)
+        logger.error(f"Error retrieving schedule for group {group_number}: {e}")
         return None
-
 
 async def get_teacher_schedule(teacher_surname):
     try:
@@ -84,7 +92,9 @@ async def get_teacher_schedule(teacher_surname):
                  .where(Timetable.id.in_(subquery))
                  .limit(60))
 
-        return query.execute()
+        result = query.execute()
+        logger.info(f"Schedule for teacher {teacher_surname} retrieved successfully")
+        return result
     except Exception as e:
-        print("Ошибка при получении расписания преподавателя:", e)
+        logger.error(f"Error retrieving schedule for teacher {teacher_surname}: {e}")
         return None

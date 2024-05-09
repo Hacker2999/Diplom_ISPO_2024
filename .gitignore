@@ -10,6 +10,7 @@
 .idea/**/shelf
 config.py
 config
+/logs
 
 # Generated files
 .idea/**/contentModel.xml
