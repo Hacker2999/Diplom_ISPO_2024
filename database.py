@@ -36,8 +36,8 @@ def update_user(user_id, group_number):
 
 async def get_schedule(group_number):
     try:
-        start_date = datetime.date(2024, 1, 20)
-        end_date = datetime.date(2024, 1, 30)
+        start_date = datetime.date(2024, 5, 13)
+        end_date = datetime.date(2024, 5, 25)
 
         subquery = (GroupsToTimetable
                     .select(GroupsToTimetable.B)
@@ -65,8 +65,8 @@ async def get_schedule(group_number):
 
 async def get_teacher_schedule(teacher_surname):
     try:
-        start_date = datetime.date(2024, 1, 20)
-        end_date = datetime.date(2024, 1, 30)
+        start_date = datetime.date(2024, 5, 13)
+        end_date = datetime.date(2024, 5, 25)
 
         subquery = (Timetable
                     .select(Timetable.id)

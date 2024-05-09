@@ -1,9 +1,10 @@
+import datetime
+
 from peewee import (
     Model, PostgresqlDatabase,
-    CharField, IntegerField, ForeignKeyField, DateTimeField, BigIntegerField, TextField, CompositeKey
+    CharField, IntegerField, ForeignKeyField, DateTimeField, BigIntegerField, TextField, CompositeKey, TimestampField
 )
 
-# Подключение к базе данных PostgreSQL
 from config import *
 
 db = PostgresqlDatabase(database=DB_NAME, user=DB_USER, password=DB_PASSWORD, host=DB_HOST, port=DB_PORT)
@@ -72,15 +73,10 @@ class GroupsToTimetable(BaseModel):
         primary_key = CompositeKey('A', 'B')
 
 
-class PrismaMigrations(BaseModel):
-    id = CharField(primary_key=True)
-    checksum = CharField()
-    finished_at = DateTimeField(null=True)
-    migration_name = CharField()
-    logs = CharField(null=True)
-    rolled_back_at = DateTimeField(null=True)
-    started_at = DateTimeField()
-    applied_steps_count = IntegerField(default=0)
+class TimetableEditLogs(BaseModel):
+    created_at = TimestampField(default=datetime.datetime.now, null=False)
+    groups = TextField(null=True)
+    notify = IntegerField(default=0, null=False)
 
     class Meta:
-        db_table = '_prisma_migrations'
+        db_table = 'TimetableEditLogs'
