@@ -1,12 +1,10 @@
-import logging
 from aiogram import types
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from database import create_user, update_user
 from handlers.messages import *
 from models import Users
-
-logger = logging.getLogger(__name__)
+from logs import logger
 
 class Registration(StatesGroup):
     role = State()

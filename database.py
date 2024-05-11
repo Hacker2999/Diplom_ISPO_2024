@@ -1,9 +1,8 @@
-import logging
 import datetime
-
+from logs import logger
 from models import Users, Timetable, Teachers, Groups, Classrooms, GroupsToTimetable, Subjects
 
-logger = logging.getLogger(__name__)
+
 
 def get_user_by_id(user_id):
     try:

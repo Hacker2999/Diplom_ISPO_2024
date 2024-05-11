@@ -1,11 +1,10 @@
-import logging
 from aiogram import types
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 from database import get_teacher_schedule, get_schedule
 from models import Users
 from utils import format_schedule, format_teacher_schedule
+from logs import logger
 
-logger = logging.getLogger(__name__)
 async def group_schedule(callback_query: types.CallbackQuery, bot):
     logger.info(f"User {callback_query.from_user.id} clicked 'Group Schedule' button")
     keyboard = ReplyKeyboardMarkup(resize_keyboard=True)

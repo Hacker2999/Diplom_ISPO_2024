@@ -1,20 +1,33 @@
 import logging
 import datetime
+import os
 
+# Создаем логгер
+logger = logging.getLogger('aiogram_logger')
 
-def setup_logging(log_level=logging.DEBUG):
-    current_time = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    log_file = f"logs/bot_{current_time}.log"
+# Установка уровня логгирования
+logger.setLevel(logging.DEBUG)
 
-    formatter = logging.Formatter(
-        '%(asctime)s - %(name)s - %(levelname)s - %(module)s - %(funcName)s - %(lineno)d - %(message)s')
+# Создаем форматтер для логов
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
-    file_handler = logging.FileHandler(log_file)
-    file_handler.setLevel(log_level)
-    file_handler.setFormatter(formatter)
+# Получаем путь к директории скрипта
+script_dir = os.path.dirname(__file__)
 
-    logger = logging.getLogger(__name__)
-    logger.setLevel(log_level)
-    logger.addHandler(file_handler)
+# Создаем имя файла логов с текущим временем
+log_dir = os.path.join(script_dir, 'logs')
+log_file_name = os.path.join(log_dir, f"{datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.log")
 
-    return logger
+# Создаем файловый хендлер для логов
+file_handler = logging.FileHandler(log_file_name)
+file_handler.setFormatter(formatter)
+
+# Добавляем хендлер к логгеру
+logger.addHandler(file_handler)
+
+# Теперь можно использовать логгер
+logger.debug('This is a debug message')
+logger.info('This is an info message')
+logger.warning('This is a warning message')
+logger.error('This is an error message')
+logger.critical('This is a critical message')
