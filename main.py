@@ -1,16 +1,26 @@
-# This is a sample Python script.
+import asyncio
+from logs import logger
+from aiogram import Bot, Dispatcher
+from aiogram.contrib.fsm_storage.memory import MemoryStorage
+from config import BOT_TOKEN
+from handlers import register_handlers, register_callbacks
+from aiogram import executor
+from notifications import check_for_new_changes
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
 
+# Initialize bot and dispatcher
+bot = Bot(token=BOT_TOKEN)
+storage = MemoryStorage()
+dp = Dispatcher(bot, storage=storage)
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+async def on_startup(dp: Dispatcher):
+    logger.info("Bot started")
+    asyncio.create_task(check_for_new_changes(dp))
 
+# Register handlers and callbacks
+register_handlers(dp)
+register_callbacks(dp, bot)
 
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+# Start the bot
+if __name__ == "__main__":
+    executor.start_polling(dp, skip_updates=True, on_startup=on_startup)
