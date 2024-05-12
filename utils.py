@@ -108,10 +108,4 @@ def format_teacher_schedule(schedule_data):
         output += "\n"
 
     return output
-def group_schedule_keyboard():
-    keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
-    keyboard.row(
-        "Моё расписание",
-        "Поиск расписания"
-    )
-    return keyboard
+

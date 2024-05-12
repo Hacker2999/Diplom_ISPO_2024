@@ -2,6 +2,11 @@ import datetime
 from logs import logger
 from models import Users, Timetable, Teachers, Groups, Classrooms, GroupsToTimetable, Subjects
 
+current_date = datetime.datetime.now().date()
+
+start_date = current_date - datetime.timedelta(days=current_date.weekday())
+
+end_date = start_date + datetime.timedelta(days=13)
 
 
 def get_user_by_id(user_id):
@@ -12,6 +17,7 @@ def get_user_by_id(user_id):
     except Users.DoesNotExist:
         logger.info(f"User {user_id} not found in database")
         return None
+
 
 def create_user(telegram_id, **kwargs):
     try:
@@ -24,6 +30,7 @@ def create_user(telegram_id, **kwargs):
     except Exception as e:
         logger.error(f"Error creating user {telegram_id}: {e}")
         return None
+
 
 def update_user(telegram_id, **kwargs):
     try:
@@ -40,10 +47,9 @@ def update_user(telegram_id, **kwargs):
         logger.error(f"Error updating user {telegram_id}: {e}")
         return False
 
+
 async def get_schedule(group_number):
     try:
-        start_date = datetime.date(2024, 5, 13)
-        end_date = datetime.date(2024, 5, 25)
 
         subquery = (GroupsToTimetable
                     .select(GroupsToTimetable.B)
@@ -70,10 +76,9 @@ async def get_schedule(group_number):
         logger.error(f"Error retrieving schedule for group {group_number}: {e}")
         return None
 
+
 async def get_teacher_schedule(teacher_surname):
     try:
-        start_date = datetime.date(2024, 5, 13)
-        end_date = datetime.date(2024, 5, 25)
 
         subquery = (Timetable
                     .select(Timetable.id)
