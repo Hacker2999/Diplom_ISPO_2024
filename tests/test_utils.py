@@ -2,7 +2,7 @@ from unittest.mock import patch, MagicMock
 from datetime import datetime
 from models import Subjects, Teachers, Classrooms, GroupsToTimetable
 
-from utils import format_schedule, format_teacher_schedule, group_schedule_keyboard
+from utils import format_schedule, format_teacher_schedule
 
 
 class TestUtils:
@@ -28,10 +28,16 @@ class TestUtils:
 
             result = format_schedule(schedule_data)
 
-            # Asserts
-            assert "15.05/среда" in result
-            assert "1 - Math (Mr. Smith)" in result
-            assert "Каб: Room 101" in result
+            expected_result = (
+                '<b>15.05/среда</b>\n'
+                '1. <b>Math</b> (Mr. Smith) - каб. Room 101\n'
+                '\n'
+                '<b>16.05/четверг</b>\n'
+                '2. <b>Math</b> (Mr. Smith) - каб. Room 101\n'
+                '\n'
+            )
+
+            assert expected_result in result
 
     def test_format_teacher_schedule(self):
         with patch('models.Subjects.get') as mock_subjects_get, \
