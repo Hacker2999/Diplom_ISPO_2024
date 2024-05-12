@@ -45,7 +45,7 @@ async def search_schedule_by_group(message: types.Message, bot):
         schedule = await get_schedule(group_number)
         if schedule:
             formatted_schedule = format_schedule(schedule)
-            await message.answer(formatted_schedule)
+            await message.answer(formatted_schedule, parse_mode="html")
             # Send new message with group_schedule buttons
             keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
             button1 = KeyboardButton("Моё расписание")
@@ -66,7 +66,7 @@ async def my_schedule(message: types.Message, bot):
             schedule = await get_schedule(group_number)
             if schedule:
                 formatted_schedule = format_schedule(schedule)
-                await message.answer(formatted_schedule)
+                await message.answer(formatted_schedule, parse_mode="html")
             else:
                 await message.answer("Расписание для вашей группы не найдено.")
         else:  # Teacher
@@ -74,7 +74,7 @@ async def my_schedule(message: types.Message, bot):
             schedule = await get_teacher_schedule(teacher_name)
             if schedule:
                 formatted_schedule = format_teacher_schedule(schedule)
-                await message.answer(formatted_schedule)
+                await message.answer(formatted_schedule, parse_mode="html")
             else:
                 await message.answer("Расписание для указанного преподавателя не найдено.")
     else:
@@ -98,7 +98,7 @@ async def search_schedule_by_teacher(message: types.Message, bot):
         schedule = await get_teacher_schedule(teacher_name)
         if schedule:
             formatted_schedule = format_teacher_schedule(schedule)
-            await message.answer(formatted_schedule)
+            await message.answer(formatted_schedule, parse_mode="html")
             # Send new message with group_schedule buttons
             keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
             button1 = KeyboardButton("Моё расписание")

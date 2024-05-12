@@ -6,7 +6,7 @@ from models import Subjects, Teachers, Classrooms, Groups, GroupsToTimetable, Ti
 from logs import logger
 locale.setlocale(
     category=locale.LC_ALL,
-    locale="Russian"  # Note: do not use "de_DE" as it doesn't work
+    locale="Russian"
 )
 
 
@@ -38,16 +38,27 @@ def format_schedule(schedule_data):
             subgroup = " п/г 2"
 
         if day not in day_items:
-            day_items[day] = set()
-        day_items[day].add((item.lesson_number, subject, teacher, classroom, subgroup))
+            day_items[day] = {}
+        if item.lesson_number not in day_items[day]:
+            day_items[day][item.lesson_number] = []
+        day_items[day][item.lesson_number].append((subject, teacher, classroom, subgroup))
 
     # Sort the days in ascending order
     sorted_days = sorted(day_items.keys(), key=lambda x: datetime.strptime(x, "%d.%m/%A"))
 
     for day in sorted_days:
-        output += f"{day}\n"
-        for item in sorted(list(day_items[day])):
-            output += f"{item[0]} - {item[1]} ({item[2]}){item[4]}\nКаб: {item[3]}\n"
+        output += f"<b>{day}</b>\n"
+        for lesson_number in sorted(day_items[day].keys()):
+            items = day_items[day][lesson_number]
+            if len(items) > 1:
+                output += f"{lesson_number}. "
+                for i, item in enumerate(items):
+                    output += f"<b>{item[0]}</b> ({item[1]}){item[3]} - каб. {item[2]}"
+                    if i < len(items) - 1:
+                        output += "\n    "
+                output += "\n"
+            else:
+                output += f"{lesson_number}. <b>{items[0][0]}</b> ({items[0][1]}){items[0][3]} - каб. {items[0][2]}\n"
         output += "\n"
 
     logger.debug("Exiting format_schedule function")
@@ -66,19 +77,34 @@ def format_teacher_schedule(schedule_data):
         group_to_timetable = GroupsToTimetable.filter(GroupsToTimetable.B == item.id).get()
         group = group_to_timetable.A
         group_name = group.name
+        subgroup = ""
+        if " п/г 1" in group_name:
+            subgroup = " п/г 1"
+        elif " п/г 2" in group_name:
+            subgroup = " п/г 2"
 
         if day not in day_items:
-            day_items[day] = set()
-        day_items[day].add((item.lesson_number, subject, group_name, classroom))
+            day_items[day] = {}
+        if item.lesson_number not in day_items[day]:
+            day_items[day][item.lesson_number] = []
+        day_items[day][item.lesson_number].append((subject, group_name, classroom, subgroup))
 
     # Sort the days in ascending order
     sorted_days = sorted(day_items.keys(), key=lambda x: datetime.strptime(x, "%d.%m/%A"))
 
-    # Format the output
     for day in sorted_days:
-        output += f"{day}\n"
-        for item in sorted(day_items[day]):
-            output += f"{item[0]} - {item[1]} ({item[2]})\nКаб: {item[3]}\n"
+        output += f"<b>{day}</b>\n"
+        for lesson_number in sorted(day_items[day].keys()):
+            items = day_items[day][lesson_number]
+            if len(items) > 1:
+                output += f"{lesson_number}. "
+                for i, item in enumerate(items):
+                    output += f"<b>{item[0]}</b> ({item[1]}){item[3]} - каб. {item[2]}"
+                    if i < len(items) - 1:
+                        output += "\n    "
+                output += "\n"
+            else:
+                output += f"{lesson_number}. <b>{items[0][0]}</b> ({items[0][1]}){items[0][3]} - каб. {items[0][2]}\n"
         output += "\n"
 
     return output
