@@ -15,19 +15,30 @@ class ChangeInfo(StatesGroup):
 
 async def start(message: types.Message):
     logger.info(f"User {message.from_user.id} sent /start command")
-    await message.answer(START_MESSAGE)
+    user_id = message.from_user.id
+    try:
+        user = Users.get(telegram_id=user_id)
+    except Users.DoesNotExist:
+        # User doesn't exist, show registration button
+        keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+        keyboard.add("Регистрация")
+        await message.answer(START_MESSAGE, reply_markup=keyboard)
+    else:
+        # User already exists, show schedule buttons
+        keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+        keyboard.add("Моё расписание", "Поиск расписания")
+        await message.answer("С возвращением!", reply_markup=keyboard)
 
-async def help(message: types.Message):
-    logger.info(f"User {message.from_user.id} sent /help command")
-    await message.answer(HELP_MESSAGE)
+async def register_button(message: types.Message):
+    logger.info(f"User {message.from_user.id} pressed register button")
+    await register(message)
 
-async def register(message: types.Message, state: FSMContext):
+async def register(message: types.Message):
     logger.info(f"User {message.from_user.id} sent /register command")
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
     keyboard.add("Студент", "Учитель")
     await message.answer("Выберите роль:", reply_markup=keyboard)
     await Registration.role.set()
-
 async def register_role(message: types.Message, state: FSMContext):
     logger.info(f"User {message.from_user.id} sent role: {message.text}")
     role = message.text
@@ -57,7 +68,6 @@ async def register_group_number_or_teacher_lastname(message: types.Message, stat
             teacher_lastname=teacher_lastname,
             teacher_role=1
         )
-
     if user:
         logger.info(f"User {user_id} successfully created")
         print("Пользователь успешно создан.")
@@ -77,9 +87,9 @@ async def change_info(message: types.Message, state: FSMContext):
     logger.info(f"User {message.from_user.id} sent /change_info command")
     user_id = message.from_user.id
     user = Users.get(telegram_id=user_id)
-    if user.teacher_role == 0:  # Student
+    if user.teacher_role == 0: # Student
         await message.answer("Введите новый номер группы:")
-    else:  # Teacher
+    else: # Teacher
         await message.answer("Введите новую фамилию:")
     await ChangeInfo.new_info.set()
 
@@ -87,7 +97,7 @@ async def change_info_new_info(message: types.Message, state: FSMContext):
     logger.info(f"User {message.from_user.id} sent new info: {message.text}")
     user_id = message.from_user.id
     user = Users.get(telegram_id=user_id)
-    if user.teacher_role == 0:  # Student
+    if user.teacher_role == 0: # Student
         new_group_number = message.text
         if update_user(user_id, group_number=new_group_number):
             logger.info(f"User {user_id} group number updated successfully")
@@ -95,7 +105,7 @@ async def change_info_new_info(message: types.Message, state: FSMContext):
         else:
             logger.error(f"Error updating user {user_id} group number")
             await message.answer(GROUP_NUMBER_UPDATE_ERROR_MESSAGE)
-    else:  # Teacher
+    else: # Teacher
         new_teacher_lastname = message.text
         if update_user(user_id, teacher_lastname=new_teacher_lastname):
             logger.info(f"User {user_id} teacher lastname updated successfully")
@@ -107,7 +117,7 @@ async def change_info_new_info(message: types.Message, state: FSMContext):
 
 def register_handlers(dp):
     dp.register_message_handler(start, commands="start")
-    dp.register_message_handler(help, commands="help")
+    dp.register_message_handler(register_button, text="Регистрация")
     dp.register_message_handler(register, commands="register", state=None)
     dp.register_message_handler(register_role, state=Registration.role)
     dp.register_message_handler(register_group_number_or_teacher_lastname, state=Registration.group_number_or_teacher_lastname)
