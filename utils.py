@@ -55,12 +55,12 @@ def format_schedule(schedule_data):
             if len(items) > 1:
                 output += f"{lesson_number}. "
                 for i, item in enumerate(items):
-                    output += f"<b>{html.escape(item[0])}</b> ({html.escape(item[1])}){html.escape(item[3])} - каб. {html.escape(item[2])}"
+                    output += f"<b>{html.escape(item[0])}</b> ({html.escape(item[1])}){html.escape(item[3])}\n    каб. {html.escape(item[2])}"  # "каб." на следующей строке
                     if i < len(items) - 1:
                         output += "\n    "
                 output += "\n"
             else:
-                output += f"{lesson_number}. <b>{html.escape(items[0][0])}</b> ({html.escape(items[0][1])}){html.escape(items[0][3])} - каб. {html.escape(items[0][2])}\n"
+                output += f"{lesson_number}. <b>{html.escape(items[0][0])}</b> ({html.escape(items[0][1])}){html.escape(items[0][3])}\n    каб. {html.escape(items[0][2])}\n"  # "каб." на следующей строке
         output += "\n"
 
     logger.debug("Exiting format_schedule function")
@@ -102,13 +102,14 @@ def format_teacher_schedule(schedule_data):
             if len(items) > 1:
                 output += f"{lesson_number}. "
                 for i, item in enumerate(items):
-                    output += f"<b>{html.escape(item[0])}</b> ({html.escape(item[1])}){html.escape(item[3])} - каб. {html.escape(item[2])}"
+                    output += f"<b>{html.escape(item[0])}</b> ({html.escape(item[1])}){html.escape(item[3])}\n    каб. {html.escape(item[2])}"  # "каб." на следующей строке
                     if i < len(items) - 1:
                         output += "\n    "
                 output += "\n"
             else:
-                output += f"{lesson_number}. <b>{html.escape(items[0][0])}</b> ({html.escape(items[0][1])}){html.escape(items[0][3])} - каб. {html.escape(items[0][2])}\n"
+                output += f"{lesson_number}. <b>{html.escape(items[0][0])}</b> ({html.escape(items[0][1])}){html.escape(items[0][3])}\n    каб. {html.escape(items[0][2])}\n"  # "каб." на следующей строке
         output += "\n"
 
     return output
+
 
