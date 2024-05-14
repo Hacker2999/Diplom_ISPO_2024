@@ -2,7 +2,7 @@ from aiogram import types
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from peewee import DatabaseError
-from database import create_user, update_user
+from database import create_user, update_user, get_teachers_by_surname
 from handlers.messages import *
 from models import Users, Teachers
 from logs import logger
@@ -94,7 +94,7 @@ async def register_teacher_lastname(message: types.Message, state: FSMContext):
 
     logger.info(f"Current state: {await state.get_state()}")
     try:
-        teachers = Teachers.select().where(Teachers.name.contains(teacher_lastname))
+        teachers = get_teachers_by_surname(teacher_lastname)
         if teachers:
             # Store the list of teacher names in the state
             await state.update_data(teachers=[str(teacher.name) for teacher in teachers])

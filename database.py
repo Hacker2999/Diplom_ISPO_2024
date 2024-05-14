@@ -17,6 +17,14 @@ def get_user_by_id(user_id):
     except Users.DoesNotExist:
         logger.info(f"User {user_id} not found in database")
         return None
+def get_teachers_by_surname(teacher_lastname):
+    try:
+        teachers = Teachers.select().where(Teachers.name.contains(teacher_lastname))
+        logger.info(f"Teachers {teacher_lastname} found in database")
+        return teachers
+    except Teachers.DoesNotExist:
+        logger.info(f"User {teacher_lastname} not found in database")
+        return None
 
 
 def create_user(telegram_id, **kwargs):
