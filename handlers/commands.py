@@ -75,13 +75,14 @@ async def register_group_number(message: types.Message, state: FSMContext):
             group_number=group_number
         )
         if user:
-            logger.info(f"User {user_id} successfully created")
-            await message.answer("Пользователь успешно создан.")
+            logger.info(f"Student {user_id} successfully created")
+            await message.answer("Вы успешно зарегистрировались как студент!", reply_markup=types.ReplyKeyboardMarkup(resize_keyboard=True).add("Моё расписание", "Поиск расписания"))
+            await state.finish()
         else:
-            logger.error(f"Error creating user {user_id}")
+            logger.error(f"Error creating Student {user_id}")
             await message.answer("Ошибка при создании пользователя.")
     except Exception as e:
-        logger.error(f"Error creating user {user_id}: {e}")
+        logger.error(f"Error creating Student {user_id}: {e}")
         await message.answer("Произошла ошибка при создании пользователя.")
 
 
