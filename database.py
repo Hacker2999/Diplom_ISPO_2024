@@ -50,7 +50,6 @@ def update_user(telegram_id, **kwargs):
 
 async def get_schedule(group_number):
     try:
-
         subquery = (GroupsToTimetable
                     .select(GroupsToTimetable.B)
                     .join(Groups, on=(GroupsToTimetable.A == Groups.id))
@@ -79,7 +78,6 @@ async def get_schedule(group_number):
 
 async def get_teacher_schedule(teacher_surname):
     try:
-
         subquery = (Timetable
                     .select(Timetable.id)
                     .join(Teachers, on=(Timetable.teacherId == Teachers.id))
@@ -102,3 +100,4 @@ async def get_teacher_schedule(teacher_surname):
     except Exception as e:
         logger.error(f"Error retrieving schedule for teacher {teacher_surname}: {e}")
         return None
+

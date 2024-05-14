@@ -59,26 +59,33 @@ async def search_schedule_by_group(message: types.Message, bot):
 async def my_schedule(message: types.Message, bot):
     logger.info(f"User {message.from_user.id} sent message: {message.text}")
     user_id = message.from_user.id
-    user = Users.get(telegram_id=user_id)
-    if user:
-        if user.teacher_role == 0:  # Student
-            group_number = user.group_number
-            schedule = await get_schedule(group_number)
-            if schedule:
-                formatted_schedule = format_schedule(schedule)
-                await message.answer(formatted_schedule, parse_mode="html")
-            else:
-                await message.answer("Расписание для вашей группы не найдено.")
-        else:  # Teacher
-            teacher_name = user.teacher_lastname
-            schedule = await get_teacher_schedule(teacher_name)
-            if schedule:
-                formatted_schedule = format_teacher_schedule(schedule)
-                await message.answer(formatted_schedule, parse_mode="html")
-            else:
-                await message.answer("Расписание для указанного преподавателя не найдено.")
-    else:
+    try:
+        user = Users.get(telegram_id=user_id)
+        if user:
+            if user.teacher_role == 0:  # Student
+                group_number = user.group_number
+                schedule = await get_schedule(group_number)
+                if schedule:
+                    formatted_schedule = format_schedule(schedule)
+                    await message.answer(formatted_schedule, parse_mode="html")
+                else:
+                    await message.answer("Расписание для вашей группы не найдено.")
+            else:  # Teacher
+                teacher_name = user.teacher_lastname
+                schedule = await get_teacher_schedule(teacher_name)
+                if schedule:
+                    formatted_schedule = format_teacher_schedule(schedule)
+                    await message.answer(formatted_schedule, parse_mode="html")
+                else:
+                    await message.answer("Расписание для указанного преподавателя не найдено.")
+        else:
+            await message.answer("Вашего пользователя нет в базе данных.")
+    except Users.DoesNotExist:
         await message.answer("Вашего пользователя нет в базе данных.")
+    except Exception as e:
+        logger.error(f"Error fetching schedule for user {user_id}: {e}")
+        await message.answer("Произошла ошибка при получении расписания.")
+
 
 
 async def ask_teacher_surname(message: types.Message, bot):
@@ -95,18 +102,23 @@ async def search_schedule_by_teacher(message: types.Message, bot):
         await search_schedule(message, bot)
     else:
         teacher_name = message.text
-        schedule = await get_teacher_schedule(teacher_name)
-        if schedule:
-            formatted_schedule = format_teacher_schedule(schedule)
-            await message.answer(formatted_schedule, parse_mode="html")
-            # Send new message with group_schedule buttons
-            keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
-            button1 = KeyboardButton("Моё расписание")
-            button2 = KeyboardButton("Поиск расписания")
-            keyboard.row(button1, button2)
-            await message.answer("Выберите действие:", reply_markup=keyboard)
-        else:
-            await message.answer("Расписание для указанного преподавателя не найдено.")
+        try:
+            schedule = await get_teacher_schedule(teacher_name)
+            if schedule:
+                formatted_schedule = format_teacher_schedule(schedule)
+                await message.answer(formatted_schedule, parse_mode="html")
+                # Send new message with group_schedule buttons
+                keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
+                button1 = KeyboardButton("Моё расписание")
+                button2 = KeyboardButton("Поиск расписания")
+                keyboard.row(button1, button2)
+                await message.answer("Выберите действие:", reply_markup=keyboard)
+            else:
+                await message.answer("Расписание для указанного преподавателя не найдено.")
+        except Exception as e:
+            logger.error(f"Error fetching schedule for teacher {teacher_name}: {e}")
+            await message.answer("Произошла ошибка при получении расписания.")
+
 
 
 async def handle_back(message: types.Message, bot):
