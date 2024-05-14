@@ -54,6 +54,11 @@ async def search_schedule_by_group(message: types.Message, bot):
             await message.answer("Выберите действие:", reply_markup=keyboard)
         else:
             await message.answer("Расписание для группы не найдено.")
+            keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
+            button1 = KeyboardButton("Моё расписание")
+            button2 = KeyboardButton("Поиск расписания")
+            keyboard.row(button1, button2)
+            await message.answer("Выберите действие:", reply_markup=keyboard)
 
 
 async def my_schedule(message: types.Message, bot):

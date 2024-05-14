@@ -17,6 +17,8 @@ def get_user_by_id(user_id):
     except Users.DoesNotExist:
         logger.info(f"User {user_id} not found in database")
         return None
+
+
 def get_teachers_by_surname(teacher_lastname):
     try:
         teachers = Teachers.select().where(Teachers.name.contains(teacher_lastname))
@@ -108,4 +110,3 @@ async def get_teacher_schedule(teacher_surname):
     except Exception as e:
         logger.error(f"Error retrieving schedule for teacher {teacher_surname}: {e}")
         return None
-

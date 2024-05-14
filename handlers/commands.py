@@ -107,7 +107,7 @@ async def register_teacher_lastname(message: types.Message, state: FSMContext):
             logger.info(f"Next state: {await state.get_state()}")
         else:
             await message.answer(
-                "Учителя с такой фамилией не найдено. Попробуйте снова или нажмите 'Повторить попытку'.")
+                "Учителя с такой фамилией не найдено. Попробуйте снова.")
     except Exception as e:
         logger.error(f"Error retrieving teachers: {e}")
         await message.answer(f"Произошла ошибка при получении списка учителей: {e}")
