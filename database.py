@@ -19,6 +19,16 @@ def get_user_by_id(user_id):
         return None
 
 
+def get_teachers_by_surname(teacher_lastname):
+    try:
+        teachers = Teachers.select().where(Teachers.name.contains(teacher_lastname))
+        logger.info(f"Teachers {teacher_lastname} found in database")
+        return teachers
+    except Teachers.DoesNotExist:
+        logger.info(f"User {teacher_lastname} not found in database")
+        return None
+
+
 def create_user(telegram_id, **kwargs):
     try:
         user = Users.create(
@@ -50,7 +60,6 @@ def update_user(telegram_id, **kwargs):
 
 async def get_schedule(group_number):
     try:
-
         subquery = (GroupsToTimetable
                     .select(GroupsToTimetable.B)
                     .join(Groups, on=(GroupsToTimetable.A == Groups.id))
@@ -79,7 +88,6 @@ async def get_schedule(group_number):
 
 async def get_teacher_schedule(teacher_surname):
     try:
-
         subquery = (Timetable
                     .select(Timetable.id)
                     .join(Teachers, on=(Timetable.teacherId == Teachers.id))

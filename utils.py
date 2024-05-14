@@ -4,6 +4,7 @@ from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeybo
 import locale
 from models import Subjects, Teachers, Classrooms, Groups, GroupsToTimetable, Timetable
 from logs import logger
+import html
 locale.setlocale(
     category=locale.LC_ALL,
     locale="Russian"
@@ -41,24 +42,25 @@ def format_schedule(schedule_data):
             day_items[day] = {}
         if item.lesson_number not in day_items[day]:
             day_items[day][item.lesson_number] = []
-        day_items[day][item.lesson_number].append((subject, teacher, classroom, subgroup))
+        if (subject, teacher, classroom, subgroup) not in day_items[day][item.lesson_number]:
+            day_items[day][item.lesson_number].append((subject, teacher, classroom, subgroup))
 
     # Sort the days in ascending order
     sorted_days = sorted(day_items.keys(), key=lambda x: datetime.strptime(x, "%d.%m/%A"))
 
     for day in sorted_days:
-        output += f"<b>{day}</b>\n"
+        output += f"<b>{html.escape(day)}</b>\n"
         for lesson_number in sorted(day_items[day].keys()):
             items = day_items[day][lesson_number]
             if len(items) > 1:
                 output += f"{lesson_number}. "
                 for i, item in enumerate(items):
-                    output += f"<b>{item[0]}</b> ({item[1]}){item[3]} - каб. {item[2]}"
+                    output += f"<b>{html.escape(item[0])}</b> ({html.escape(item[1])}){html.escape(item[3])}\n    каб. {html.escape(item[2])}"  # "каб." на следующей строке
                     if i < len(items) - 1:
                         output += "\n    "
                 output += "\n"
             else:
-                output += f"{lesson_number}. <b>{items[0][0]}</b> ({items[0][1]}){items[0][3]} - каб. {items[0][2]}\n"
+                output += f"{lesson_number}. <b>{html.escape(items[0][0])}</b> ({html.escape(items[0][1])}){html.escape(items[0][3])}\n    каб. {html.escape(items[0][2])}\n"  # "каб." на следующей строке
         output += "\n"
 
     logger.debug("Exiting format_schedule function")
@@ -87,25 +89,27 @@ def format_teacher_schedule(schedule_data):
             day_items[day] = {}
         if item.lesson_number not in day_items[day]:
             day_items[day][item.lesson_number] = []
-        day_items[day][item.lesson_number].append((subject, group_name, classroom, subgroup))
+        if (subject, group_name, classroom, subgroup) not in day_items[day][item.lesson_number]:
+            day_items[day][item.lesson_number].append((subject, group_name, classroom, subgroup))
 
     # Sort the days in ascending order
     sorted_days = sorted(day_items.keys(), key=lambda x: datetime.strptime(x, "%d.%m/%A"))
 
     for day in sorted_days:
-        output += f"<b>{day}</b>\n"
+        output += f"<b>{html.escape(day)}</b>\n"
         for lesson_number in sorted(day_items[day].keys()):
             items = day_items[day][lesson_number]
             if len(items) > 1:
                 output += f"{lesson_number}. "
                 for i, item in enumerate(items):
-                    output += f"<b>{item[0]}</b> ({item[1]}){item[3]} - каб. {item[2]}"
+                    output += f"<b>{html.escape(item[0])}</b> ({html.escape(item[1])}){html.escape(item[3])}\n    каб. {html.escape(item[2])}"  # "каб." на следующей строке
                     if i < len(items) - 1:
                         output += "\n    "
                 output += "\n"
             else:
-                output += f"{lesson_number}. <b>{items[0][0]}</b> ({items[0][1]}){items[0][3]} - каб. {items[0][2]}\n"
+                output += f"{lesson_number}. <b>{html.escape(items[0][0])}</b> ({html.escape(items[0][1])}){html.escape(items[0][3])}\n    каб. {html.escape(items[0][2])}\n"  # "каб." на следующей строке
         output += "\n"
 
     return output
+
 
