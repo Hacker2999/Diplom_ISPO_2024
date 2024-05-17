@@ -76,7 +76,9 @@ async def register_group_number(message: types.Message, state: FSMContext):
         )
         if user:
             logger.info(f"Student {user_id} successfully created")
-            await message.answer("Вы успешно зарегистрировались как студент!", reply_markup=types.ReplyKeyboardMarkup(resize_keyboard=True).add("Моё расписание", "Поиск расписания"))
+            await message.answer("Вы успешно зарегистрировались как студент!",
+                                 reply_markup=types.ReplyKeyboardMarkup(resize_keyboard=True).add("Моё расписание",
+                                                                                                  "Поиск расписания"))
             await state.finish()
         else:
             logger.error(f"Error creating Student {user_id}")
@@ -142,7 +144,9 @@ async def register_teacher_select(message: types.Message, state: FSMContext):
             user.save()
 
             logger.info(f"User {user_id} created successfully with teacher {selected_teacher}")
-            await message.answer("Вы успешно зарегистрировались как учитель!", reply_markup=types.ReplyKeyboardMarkup(resize_keyboard=True).add("Моё расписание", "Поиск расписания"))
+            await message.answer("Вы успешно зарегистрировались как учитель!",
+                                 reply_markup=types.ReplyKeyboardMarkup(resize_keyboard=True).add("Моё расписание",
+                                                                                                  "Поиск расписания"))
             await state.finish()
         else:
             await message.answer("Выберите фамилию из списка.")
@@ -163,7 +167,7 @@ async def change_info(message: types.Message, state: FSMContext):
     if user.teacher_role == 0:  # Student
         await message.answer("Введите новый номер группы:")
     else:  # Teacher
-        await message.answer("Введите новую фамилию:")
+        await message.answer("Введите фамилию для поиска:")
     await ChangeInfo.new_info.set()
 
 
@@ -180,13 +184,56 @@ async def change_info_new_info(message: types.Message, state: FSMContext):
             logger.error(f"Error updating user {user_id} group number")
             await message.answer(GROUP_NUMBER_UPDATE_ERROR_MESSAGE)
     else:  # Teacher
-        new_teacher_lastname = message.text
-        if update_user(user_id, teacher_lastname=new_teacher_lastname):
+        teacher_lastname = message.text
+        teachers = get_teachers_by_surname(teacher_lastname)
+        if teachers:
+            # Check if the user has already selected a teacher from the list
+            user_data = await state.get_data()
+            if 'teachers' in user_data:
+                # User has already selected a teacher, update the user's information
+                selected_teacher = message.text
+                teacher = Teachers.select().where(Teachers.name == selected_teacher).first()
+                teacher_id = teacher.id
+                if update_user(user_id, teacher_lastname=selected_teacher):
+                    logger.info(f"User {user_id} teacher lastname updated successfully")
+                    await message.answer(TEACHER_LASTNAME_UPDATED_MESSAGE,reply_markup=types.ReplyKeyboardMarkup(resize_keyboard=True).add("Моё расписание",
+                                                                                                  "Поиск расписания"))
+                else:
+                    logger.error(f"Error updating user {user_id} teacher lastname")
+                    await message.answer(TEACHER_LASTNAME_UPDATE_ERROR_MESSAGE)
+                await state.finish()
+            else:
+                # Create a keyboard with the teacher names
+                keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+                for teacher in teachers:
+                    keyboard.add(str(teacher.name))
+                await message.answer("Выберите фамилию:", reply_markup=keyboard)
+                await state.update_data(teachers=[str(teacher.name) for teacher in teachers])
+        else:
+            await message.answer("Учителя с такой фамилией не найдено. Попробуйте снова.")
+
+
+async def change_info_select_teacher(message: types.Message, state: FSMContext):
+    logger.info(f"User {message.from_user.id} selected teacher: {message.text}")
+    user_id = message.from_user.id
+    user = Users.get(telegram_id=user_id)
+    selected_teacher = message.text
+    user_data = await state.get_data()
+    teachers = user_data.get('teachers')
+    if selected_teacher in teachers:
+        # Get the teacher ID from the database
+        teacher = Teachers.select().where(Teachers.name == selected_teacher).first()
+        teacher_id = teacher.id
+
+        # Update the user's teacher lastname
+        if update_user(user_id, teacher_lastname=selected_teacher):
             logger.info(f"User {user_id} teacher lastname updated successfully")
             await message.answer(TEACHER_LASTNAME_UPDATED_MESSAGE)
         else:
             logger.error(f"Error updating user {user_id} teacher lastname")
             await message.answer(TEACHER_LASTNAME_UPDATE_ERROR_MESSAGE)
+    else:
+        await message.answer("Выберите фамилию из списка.")
     await state.finish()
 
 
@@ -200,3 +247,4 @@ def register_handlers(dp):
     dp.register_message_handler(register_teacher_select, state=Registration.teacher_select)
     dp.register_message_handler(change_info, commands="change_info", state=None)
     dp.register_message_handler(change_info_new_info, state=ChangeInfo.new_info)
+    dp.register_message_handler(change_info_select_teacher, state=ChangeInfo.new_info)

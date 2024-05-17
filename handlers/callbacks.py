@@ -47,7 +47,6 @@ async def search_schedule_by_group(message: types.Message, bot):
         if schedule:
             formatted_schedule = format_schedule(schedule)
             await message.answer(formatted_schedule, parse_mode="html")
-            # Send new message with group_schedule buttons
             keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
             button1 = KeyboardButton("Моё расписание")
             button2 = KeyboardButton("Поиск расписания")
@@ -67,7 +66,7 @@ async def my_schedule(message: types.Message, bot):
     try:
         user = Users.get(telegram_id=user_id)
         if user:
-            if user.teacher_role == 0:  # Student
+            if user.teacher_role == 0:  # Студент
                 group_number = user.group_number
                 schedule = await get_schedule(group_number)
                 if schedule:
@@ -80,7 +79,7 @@ async def my_schedule(message: types.Message, bot):
                     await message.answer("Выберите действие:", reply_markup=keyboard)
                 else:
                     await message.answer("Расписание для вашей группы не найдено.")
-            else:  # Teacher
+            else:  # Учитель
                 teacher_name = user.teacher_lastname
                 schedule = await get_teacher_schedule(teacher_name)
                 if schedule:
@@ -116,7 +115,7 @@ async def search_teacher_surname(message: types.Message, bot):
         await search_schedule(message, bot)
     else:
         surname = message.text
-        teachers = get_teachers_by_surname(surname)  # new function to get teachers by surname
+        teachers = get_teachers_by_surname(surname)
         if teachers:
             keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
             for teacher in teachers:

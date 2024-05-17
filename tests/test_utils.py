@@ -7,7 +7,6 @@ from utils import format_schedule, format_teacher_schedule
 
 class TestUtils:
 
-
     def test_format_schedule(self):
         with patch('models.Subjects.get') as mock_subjects_get, \
                 patch('models.Teachers.get') as mock_teachers_get, \
@@ -29,12 +28,14 @@ class TestUtils:
             result = format_schedule(schedule_data)
 
             expected_result = (
-                '<b>15.05/среда</b>\n'
-                '1. <b>Math</b> (Mr. Smith) - каб. Room 101\n'
-                '\n'
-                '<b>16.05/четверг</b>\n'
-                '2. <b>Math</b> (Mr. Smith) - каб. Room 101\n'
-                '\n'
+                ('<b>15.05/среда</b>\n'
+                 '1. <b>Math</b> (Mr. Smith)\n'
+                 '    каб. Room 101\n'
+                 '\n'
+                 '<b>16.05/четверг</b>\n'
+                 '2. <b>Math</b> (Mr. Smith)\n'
+                 '    каб. Room 101\n'
+                 '\n')
             )
 
             assert expected_result in result
@@ -62,6 +63,3 @@ class TestUtils:
             assert "Math" in result
             assert "Room 101" in result
             assert "Group 1" not in result  # Ensure "Group 1" is not in the result
-
-
-

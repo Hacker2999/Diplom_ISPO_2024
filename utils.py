@@ -45,7 +45,7 @@ def format_schedule(schedule_data):
         if (subject, teacher, classroom, subgroup) not in day_items[day][item.lesson_number]:
             day_items[day][item.lesson_number].append((subject, teacher, classroom, subgroup))
 
-    # Sort the days in ascending order
+
     sorted_days = sorted(day_items.keys(), key=lambda x: datetime.strptime(x, "%d.%m/%A"))
 
     for day in sorted_days:
@@ -71,7 +71,7 @@ def format_teacher_schedule(schedule_data):
     day_items = {}
     for item in schedule_data:
         date = item.date
-        day = date.strftime("%d.%m/%A")  # Extract the day of the week (e.g., Monday, Tuesday, etc.)
+        day = date.strftime("%d.%m/%A")
         subject_id = item.subjectId
         subject = Subjects.get(id=subject_id).name
         classroom_id = item.classroomId
@@ -92,7 +92,7 @@ def format_teacher_schedule(schedule_data):
         if (subject, group_name, classroom, subgroup) not in day_items[day][item.lesson_number]:
             day_items[day][item.lesson_number].append((subject, group_name, classroom, subgroup))
 
-    # Sort the days in ascending order
+
     sorted_days = sorted(day_items.keys(), key=lambda x: datetime.strptime(x, "%d.%m/%A"))
 
     for day in sorted_days:
